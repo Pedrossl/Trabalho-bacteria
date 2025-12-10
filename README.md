@@ -1,6 +1,4 @@
-2# 📊 Sistema de Análise Biomédica - ESP32
-
-Sistema completo para monitoramento e análise de dados de equipamentos biomédicos via ESP32, com API REST, banco de dados SQLite e dashboards interativos.
+Sistema completo para monitoramento e análise de dados de equipamentos via ESP32, com API REST, banco de dados SQLite e dashboards interativos.
 
 ## 🚀 Funcionalidades
 
@@ -184,19 +182,3 @@ void enviarDados(int tempo, int potencia) {
 - O banco de dados é criado automaticamente na primeira execução
 - As interfaces se comunicam em tempo real com a API
 - Suporte a CORS habilitado para desenvolvimento
-
-## 🤝 Contribuindo
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona MinhaFeature'`)
-4. Push para a branch (`git push origin feature/MinhaFeature`)
-5. Abra um Pull Request
-
-## 📄 Licença
-
-Este projeto é de uso acadêmico para o mestrado em Biomedicina.
-
----
-
-Desenvolvido com ❤️ para análise de equipamentos biomédicos
