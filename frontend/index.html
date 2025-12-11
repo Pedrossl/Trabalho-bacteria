@@ -3,119 +3,656 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Histórico do ESP32</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Análise</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background: #0d0d0d;
-            color: #e0e0e0;
             font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            padding: 30px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #86c6ff;
-            margin-bottom: 25px;
-            text-shadow: 0 0 8px rgba(134, 198, 255, 0.4);
-        }
-
-        #container {
-            max-width: 700px;
-            margin: auto;
-            background: #1a1a1a;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
         }
 
-        .linha {
-            background: #111;
-            padding: 12px 18px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border-left: 4px solid #4aa3ff;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 16px;
-            transition: 0.3s;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
-        .linha:hover {
-            background: #181818;
-            transform: scale(1.01);
+        h1 {
+            color: #667eea;
+            font-size: 28px;
         }
 
-        .tag {
-            color: #4aa3ff;
-            font-weight: bold;
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
-        #atualizar {
-            display: block;
-            margin: 20px auto 0;
-            padding: 10px 20px;
-            background: #4aa3ff;
+        button {
+            padding: 12px 24px;
             border: none;
-            color: black;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
-            font-weight: bold;
-            transition: 0.3s;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        #atualizar:hover {
-            background: #73baff;
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        button.active {
+            transform: scale(0.95);
+        }
+
+        .content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            min-height: 500px;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1>Histórico do ESP32</h1>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chart-line"></i> Sistema de Análise - Equipamento de potência </h1>
+            <div class="nav-buttons">
+                <button class="btn-primary" onclick="showPage('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </button>
+                <button class="btn-secondary" onclick="showPage('graficos')">
+                    <i class="fas fa-chart-bar"></i> Gráficos Detalhados
+                </button>
+                <button class="btn-success" onclick="showPage('tabela')">
+                    <i class="fas fa-table"></i> Tabela de Dados
+                </button>
 
-    <div id="container">
-        <div id="lista"></div>
-        <button id="atualizar" onclick="carregar()">Atualizar</button>
-        <a href="/dashboard.html"
-            style="display: block; margin: 15px auto 0; padding: 10px 20px; background: #86c6ff; border-radius: 6px; text-align: center; color: black; text-decoration: none; font-weight: bold; max-width: 200px; transition: 0.3s;"
-            onmouseover="this.style.background='#73baff'" onmouseout="this.style.background='#86c6ff'">📊 Ver Dashboard
-            Completo</a>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- PÁGINA 1: DASHBOARD -->
+            <div id="dashboard" class="page active">
+                <h2><i class="fas fa-chart-pie"></i> Dashboard - Visão Geral</h2>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando estatísticas...</div>
+                </div>
+
+                <div class="info-section">
+                    <h3><i class="fas fa-info-circle"></i> Sobre os Parâmetros</h3>
+                    <p>
+                        <strong><i class="far fa-clock"></i> Tempo de Operação (s):</strong> Duração da operação do
+                        equipamento em segundos.<br />
+                        <strong><i class="fas fa-bolt"></i> Potência (%):</strong> Nível de potência utilizado durante a
+                        operação.
+                    </p>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="dashboardChart"></canvas>
+                </div>
+            </div>
+
+            <!-- PÁGINA 2: GRÁFICOS DETALHADOS -->
+            <div id="graficos" class="page">
+                <h2><i class="fas fa-chart-area"></i> Análise Gráfica Detalhada</h2>
+                <div class="charts-grid">
+                    <div>
+                        <h3 style="color: #667eea; margin-bottom: 15px">
+                            Distribuição de Tempo de Operação
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="tensaoChart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="color: #667eea; margin-bottom: 15px">
+                            Distribuição de Potência
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="radiacaoChart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="color: #667eea; margin-bottom: 15px">
+                            Tempo de Operação vs Potência
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="scatterChart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="color: #667eea; margin-bottom: 15px">
+                            Evolução ao Longo do Tempo
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="repeticoesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PÁGINA 3: TABELA -->
+            <div id="tabela" class="page">
+                <h2><i class="fas fa-database"></i> Tabela de Registros Completa</h2>
+                <div id="tableContainer">
+                    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando dados...</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        async function carregar() {
-            try {
-                const res = await fetch("http://localhost:3000/historico");
-                const dados = await res.json();
+        const API_URL = "http://localhost:3000";
+        let todosOsDados = [];
+        let charts = {};
 
-                const lista = document.getElementById("lista");
-                lista.innerHTML = ""; // limpa
+        // Navegação entre páginas
+        function showPage(pageId) {
+            document.querySelectorAll(".page").forEach((page) => {
+                page.classList.remove("active");
+            });
+            document.getElementById(pageId).classList.add("active");
 
-                dados.slice().reverse().forEach(item => {
-                    const horario = new Date(item.timestamp).toLocaleTimeString("pt-BR");
-
-                    const linha = `
-            <div class="linha">
-              <span class="tag">Tempo:</span> ${item.tempoOperacao}s &nbsp;&nbsp;
-              <span class="tag">Potência:</span> ${item.potencia}% &nbsp;&nbsp;
-              <span class="tag">Hora:</span> ${horario}
-            </div>
-          `;
-
-                    lista.innerHTML += linha;
-                });
-
-            } catch (e) {
-                document.getElementById("lista").innerHTML =
-                    "<p style='color:#ff6666'>Erro ao carregar dados.</p>";
+            // Carregar dados específicos da página
+            if (pageId === "dashboard") {
+                loadDashboard();
+            } else if (pageId === "graficos") {
+                loadGraficosDetalhados();
+            } else if (pageId === "tabela") {
+                loadTabela();
             }
         }
 
-        setInterval(carregar, 2000);
+        // DASHBOARD
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_URL}/estatisticas`);
+                const stats = await response.json();
 
-        carregar();
+                const statsGrid = document.getElementById("statsGrid");
+                statsGrid.innerHTML = `
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-database"></i></div>
+              <div class="stat-label">Total de Registros</div>
+              <div class="stat-value">${stats.total || 0}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="far fa-clock"></i></div>
+              <div class="stat-label">Tempo Médio</div>
+              <div class="stat-value">${(stats.tempoMedio || 0).toFixed(
+                    0
+                )}s</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-bolt"></i></div>
+              <div class="stat-label">Potência Média</div>
+              <div class="stat-value">${(stats.potenciaMedia || 0).toFixed(
+                    1
+                )}%</div>
+            </div>
+
+          `;
+
+                // Gráfico do dashboard
+                const dadosResponse = await fetch(`${API_URL}/todos`);
+                todosOsDados = await dadosResponse.json();
+
+                const ctx = document.getElementById("dashboardChart");
+                if (charts.dashboard) charts.dashboard.destroy();
+
+                charts.dashboard = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: todosOsDados.map((d, i) => `#${i + 1}`),
+                        datasets: [
+                            {
+                                label: "Tempo de Operação (s)",
+                                data: todosOsDados.map((d) => d.tempoOperacao),
+                                borderColor: "#667eea",
+                                backgroundColor: "rgba(102, 126, 234, 0.1)",
+                                tension: 0.4,
+                            },
+                            {
+                                label: "Potência (%)",
+                                data: todosOsDados.map((d) => d.potencia),
+                                borderColor: "#f5576c",
+                                backgroundColor: "rgba(245, 87, 108, 0.1)",
+                                tension: 0.4,
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: "top",
+                            },
+                            title: {
+                                display: true,
+                                text: "Evolução dos Parâmetros ao Longo das Operações",
+                            },
+                        },
+                    },
+                });
+            } catch (error) {
+                console.error("Erro ao carregar dashboard:", error);
+                document.getElementById("statsGrid").innerHTML =
+                    '<div class="error"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar dados. Certifique-se de que a API está rodando.</div>';
+            }
+        }
+
+        // GRÁFICOS DETALHADOS
+        async function loadGraficosDetalhados() {
+            try {
+                if (todosOsDados.length === 0) {
+                    const response = await fetch(`${API_URL}/todos`);
+                    todosOsDados = await response.json();
+                }
+
+                // Histograma de Tempo
+                const tensaoCtx = document.getElementById("tensaoChart");
+                if (charts.tensao) charts.tensao.destroy();
+
+                const tensaoHistogram = createHistogram(
+                    todosOsDados.map((d) => d.tempoOperacao),
+                    10
+                );
+
+                charts.tensao = new Chart(tensaoCtx, {
+                    type: "bar",
+                    data: {
+                        labels: tensaoHistogram.labels,
+                        datasets: [
+                            {
+                                label: "Frequência",
+                                data: tensaoHistogram.data,
+                                backgroundColor: "rgba(102, 126, 234, 0.7)",
+                                borderColor: "#667eea",
+                                borderWidth: 2,
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: "Distribuição de Tempo de Operação (s)",
+                            },
+                        },
+                    },
+                });
+
+                // Histograma de Potência
+                const radiacaoCtx = document.getElementById("radiacaoChart");
+                if (charts.radiacao) charts.radiacao.destroy();
+
+                const radiacaoHistogram = createHistogram(
+                    todosOsDados.map((d) => parseFloat(d.potencia)),
+                    10
+                );
+
+                charts.radiacao = new Chart(radiacaoCtx, {
+                    type: "bar",
+                    data: {
+                        labels: radiacaoHistogram.labels,
+                        datasets: [
+                            {
+                                label: "Frequência",
+                                data: radiacaoHistogram.data,
+                                backgroundColor: "rgba(245, 87, 108, 0.7)",
+                                borderColor: "#f5576c",
+                                borderWidth: 2,
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: "Distribuição de Potência (%)",
+                            },
+                        },
+                    },
+                });
+
+                // Scatter: Tempo vs Potência
+                const scatterCtx = document.getElementById("scatterChart");
+                if (charts.scatter) charts.scatter.destroy();
+
+                charts.scatter = new Chart(scatterCtx, {
+                    type: "scatter",
+                    data: {
+                        datasets: [
+                            {
+                                label: "Operações",
+                                data: todosOsDados.map((d) => ({
+                                    x: d.tempoOperacao,
+                                    y: d.potencia,
+                                })),
+                                backgroundColor: "rgba(79, 172, 254, 0.6)",
+                                borderColor: "#4facfe",
+                                borderWidth: 2,
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: "Relação entre Tempo de Operação e Potência",
+                            },
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: "Tempo de Operação (s)",
+                                },
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: "Potência (%)",
+                                },
+                            },
+                        },
+                    },
+                });
+
+                // Gráfico de Evolução
+                const repeticoesCtx = document.getElementById("repeticoesChart");
+                if (charts.repeticoes) charts.repeticoes.destroy();
+
+                charts.repeticoes = new Chart(repeticoesCtx, {
+                    type: "bar",
+                    data: {
+                        labels: todosOsDados.slice(-20).map((d, i) => `#${todosOsDados.length - 20 + i + 1}`),
+                        datasets: [
+                            {
+                                label: "Tempo (s)",
+                                data: todosOsDados.slice(-20).map((d) => d.tempoOperacao),
+                                backgroundColor: "rgba(102, 126, 234, 0.7)",
+                                borderColor: "#667eea",
+                                borderWidth: 2,
+                            },
+                            {
+                                label: "Potência (%)",
+                                data: todosOsDados.slice(-20).map((d) => d.potencia),
+                                backgroundColor: "rgba(245, 87, 108, 0.7)",
+                                borderColor: "#f5576c",
+                                borderWidth: 2,
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: "Últimas 20 Operações",
+                            },
+                        },
+                    },
+                });
+            } catch (error) {
+                console.error("Erro ao carregar gráficos:", error);
+            }
+        }
+
+        // TABELA
+        async function loadTabela() {
+            try {
+                if (todosOsDados.length === 0) {
+                    const response = await fetch(`${API_URL}/todos`);
+                    todosOsDados = await response.json();
+                }
+
+                const tableContainer = document.getElementById("tableContainer");
+                tableContainer.innerHTML = `
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Tempo (s)</th>
+                  <th>Potência (%)</th>
+                  <th>Data/Hora</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${todosOsDados
+                        .map(
+                            (d) => `
+                  <tr>
+                    <td>${d.id}</td>
+                    <td>${d.tempoOperacao}</td>
+                    <td>${d.potencia}</td>
+                    <td>${new Date(d.timestamp).toLocaleString("pt-BR")}</td>
+                  </tr>
+                `
+                        )
+                        .join("")}
+              </tbody>
+            </table>
+          `;
+            } catch (error) {
+                console.error("Erro ao carregar tabela:", error);
+                document.getElementById("tableContainer").innerHTML =
+                    '<div class="error"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar dados.</div>';
+            }
+        }
+
+        // Função auxiliar para criar histogramas
+        function createHistogram(data, bins) {
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const binSize = (max - min) / bins;
+
+            const histogram = new Array(bins).fill(0);
+            const labels = [];
+
+            for (let i = 0; i < bins; i++) {
+                const binStart = min + i * binSize;
+                const binEnd = binStart + binSize;
+                labels.push(`${binStart.toFixed(1)}-${binEnd.toFixed(1)}`);
+
+                data.forEach((value) => {
+                    if (value >= binStart && value < binEnd) {
+                        histogram[i]++;
+                    }
+                });
+            }
+
+            return { labels, data: histogram };
+        }
+
+        // Carregar dashboard ao iniciar
+        loadDashboard();
     </script>
 </body>
 

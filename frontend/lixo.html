@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Histórico do ESP32</title>
+
+    <style>
+        body {
+            background: #0d0d0d;
+            color: #e0e0e0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #86c6ff;
+            margin-bottom: 25px;
+            text-shadow: 0 0 8px rgba(134, 198, 255, 0.4);
+        }
+
+        #container {
+            max-width: 700px;
+            margin: auto;
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+        }
+
+        .linha {
+            background: #111;
+            padding: 12px 18px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4aa3ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .linha:hover {
+            background: #181818;
+            transform: scale(1.01);
+        }
+
+        .tag {
+            color: #4aa3ff;
+            font-weight: bold;
+        }
+
+        #atualizar {
+            display: block;
+            margin: 20px auto 0;
+            padding: 10px 20px;
+            background: #4aa3ff;
+            border: none;
+            color: black;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        #atualizar:hover {
+            background: #73baff;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Histórico do ESP32</h1>
+
+    <div id="container">
+        <div id="lista"></div>
+        <button id="atualizar" onclick="carregar()">Atualizar</button>
+        <a href="/dashboard.html"
+            style="display: block; margin: 15px auto 0; padding: 10px 20px; background: #86c6ff; border-radius: 6px; text-align: center; color: black; text-decoration: none; font-weight: bold; max-width: 200px; transition: 0.3s;"
+            onmouseover="this.style.background='#73baff'" onmouseout="this.style.background='#86c6ff'">📊 Ver Dashboard
+            Completo</a>
+    </div>
+
+    <script>
+        async function carregar() {
+            try {
+                const res = await fetch("http://localhost:3000/historico");
+                const dados = await res.json();
+
+                const lista = document.getElementById("lista");
+                lista.innerHTML = ""; // limpa
+
+                dados.slice().reverse().forEach(item => {
+                    const horario = new Date(item.timestamp).toLocaleTimeString("pt-BR");
+
+                    const linha = `
+            <div class="linha">
+              <span class="tag">Tempo:</span> ${item.tempoOperacao}s &nbsp;&nbsp;
+              <span class="tag">Potência:</span> ${item.potencia}% &nbsp;&nbsp;
+              <span class="tag">Hora:</span> ${horario}
+            </div>
+          `;
+
+                    lista.innerHTML += linha;
+                });
+
+            } catch (e) {
+                document.getElementById("lista").innerHTML =
+                    "<p style='color:#ff6666'>Erro ao carregar dados.</p>";
+            }
+        }
+
+        setInterval(carregar, 2000);
+
+        carregar();
+    </script>
+</body>
+
+</html>
